@@ -1,2 +1,2 @@
-# association_rules
-Advanced DB proj3
+# Extracting Association Rules
+Advanced Database project 3
