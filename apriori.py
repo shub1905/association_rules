@@ -82,14 +82,17 @@ def generate_rules(inFile, minConfidence, minSupport):
 
 def print_output(total_freq_item, rules):
   '''print output in required format'''
+  print 'Items:'
   for key in total_freq_item:
-    print list(key), ' Support = ', total_freq_item[key]
+    print tuple(key), ' Support = %.3f'%total_freq_item[key]
+
+  print '\nRules:'
 
   for item in rules:
     a = list(item[0])
     b = list(item[1])
     c = frozenset(a + b)
-    print a, '=>', b, '(conf=', item[2], ', sup=', total_freq_item[c],')'
+    print a, '=>', b, '(conf=%.3f, sup=%.3f)'%(item[2], total_freq_item[c])
 
 
 def print_data(record):
