@@ -1,5 +1,16 @@
 import sys
 import pudb
+import itertools
+
+
+def findsubsets(S):
+  subsets = []
+  for m in range(1, len(S)):
+    subsets = subsets + list(itertools.combinations(S, m))
+  subsets = set(subsets)
+
+  subs = set([(S.difference(x), frozenset(x)) for x in subsets])
+  return subs
 
 
 def generate_next_set(set_list, length):
@@ -23,6 +34,7 @@ def get_transactions_list_itemset(inFile):
 
 
 def fetch_min_support_items(itemset, minSupport, transactionList, total_freq_item):
+  '''given a list of items return a set of itemset with support > minSupport'''
   freq_item = {}
   new_itemset = set()
   L = len(transactionList)
@@ -36,12 +48,13 @@ def fetch_min_support_items(itemset, minSupport, transactionList, total_freq_ite
     value = freq_item[key]
     if value >= minSupport * L:
       new_itemset.add(key)
-      total_freq_item[key] = value
+      total_freq_item[key] = value * 1.0 / L
 
   return new_itemset
 
 
 def generate_rules(inFile, minConfidence, minSupport):
+  '''Main function generates rules based on class lecture'''
   total_freq_item = {}
   itemset, transactionList = get_transactions_list_itemset(inFile)
   itemset = fetch_min_support_items(itemset, minSupport, transactionList, total_freq_item)
@@ -54,8 +67,30 @@ def generate_rules(inFile, minConfidence, minSupport):
     if len(itemset) == 0:
       break
 
-  print total_freq_item
-  return 0,0
+  rules = []
+  for item in total_freq_item:
+    subsets = findsubsets(item)
+    # print 'item = ',item, '\nsubsets: '
+    for sub in subsets:
+      sup_item = sub[1]
+      remain = sub[0]
+      confidence = total_freq_item[item] * 1.0 / total_freq_item[sup_item]
+      if confidence >= minConfidence:
+        rules.append((sup_item, remain, confidence))
+  return total_freq_item, rules
+
+
+def print_output(total_freq_item, rules):
+  '''print output in required format'''
+  for key in total_freq_item:
+    print list(key), ' Support = ', total_freq_item[key]
+
+  for item in rules:
+    a = list(item[0])
+    b = list(item[1])
+    c = frozenset(a + b)
+    print a, '=>', b, '(conf=', item[2], ', sup=', total_freq_item[c],')'
+
 
 def print_data(record):
   '''Test: print data'''
@@ -76,3 +111,4 @@ if __name__ == '__main__':
     sys.exit(0)
   # pudb.set_trace()
   items, rules = generate_rules(inFile, minConfidence, minSupport)
+  print_output(items, rules)
